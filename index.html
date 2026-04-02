@@ -233,7 +233,7 @@ function nameToRatios(name){
   return ratios;
 }
 
-// ── 脳のCanvas描画
+// ── 脳のCanvas描画（漢字一文字の集合）
 function drawBrain(canvas, ratios){
   const ctx=canvas.getContext('2d');
   const W=canvas.width, H=canvas.height;
@@ -241,6 +241,16 @@ function drawBrain(canvas, ratios){
 
   const cx=W/2, cy=H/2-5;
   const rx=115, ry=95;
+
+  // 各項目の漢字（複数候補からランダム）
+  const KANJI=[
+    ['食','飯','腹','味','肉','菓','酒','甘'],  // 食欲
+    ['愛','恋','心','好','恵','婚','縁','恋'],  // 恋愛
+    ['仕','働','業','勤','職','努','功','達'],  // 仕事
+    ['金','富','財','銭','稼','貯','宝','得'],  // お金
+    ['眠','夢','寝','休','安','惰','惰','怠'],  // 睡眠
+    ['遊','楽','喜','趣','楽','笑','歌','踊'],  // 遊び
+  ];
 
   function brainClipPath(){
     ctx.beginPath();
@@ -254,41 +264,88 @@ function drawBrain(canvas, ratios){
     ctx.closePath();
   }
 
-  const totalH=ry*1.72;
-  const startY=cy-ry*0.92;
+  // 脳内に配置する漢字リストを割合に応じて生成
+  const TOTAL_CHARS=80;
+  let charList=[];
+  ratios.forEach((r,i)=>{
+    const count=Math.max(1,Math.round(r*TOTAL_CHARS));
+    for(let j=0;j<count;j++){
+      const kanji=KANJI[i][Math.floor(Math.random()*KANJI[i].length)];
+      charList.push({kanji, color:ITEMS[i].color, idx:i});
+    }
+  });
+  // ランダムシャッフル
+  for(let i=charList.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [charList[i],charList[j]]=[charList[j],charList[i]];
+  }
 
-  // 1. カラーブロック塗り
+  // 脳の形の内側に点をランダム配置
+  function isInsideBrain(x,y){
+    // ベジェパスの近似：楕円で判定
+    const dx=x-cx, dy=y-cy;
+    // 脳の外形の近似チェック（くびれを考慮した楕円2つ）
+    const inLeft=((dx+12)*(dx+12))/(rx*0.72*rx*0.72)+((dy*dy)/(ry*ry))<0.88;
+    const inRight=((dx-12)*(dx-12))/(rx*0.72*rx*0.72)+((dy*dy)/(ry*ry))<0.88;
+    return inLeft||inRight;
+  }
+
+  // ランダム配置（重ならないよう試行）
+  const placed=[];
+  const fontSize=18;
+  const minDist=fontSize*1.1;
+
+  charList.forEach(ch=>{
+    let tries=0;
+    while(tries<40){
+      const x=cx+(Math.random()-0.5)*rx*1.3;
+      const y=cy+(Math.random()-0.5)*ry*1.7;
+      if(!isInsideBrain(x,y)){tries++;continue;}
+      // 重なりチェック
+      const overlap=placed.some(p=>{
+        const dx=p.x-x,dy=p.y-y;
+        return Math.sqrt(dx*dx+dy*dy)<minDist;
+      });
+      if(overlap){tries++;continue;}
+      placed.push({...ch,x,y});
+      break;
+    }
+  });
+
+  // 1. 背景（薄い肌色）
   ctx.save();
   brainClipPath(); ctx.clip();
-  let y=startY;
-  ratios.forEach((r,i)=>{
-    const h=totalH*r;
-    ctx.fillStyle=ITEMS[i].color;
-    ctx.globalAlpha=0.88;
-    ctx.fillRect(cx-rx*0.8, y, rx*1.6, h+1);
-    y+=h;
-  });
+  ctx.fillStyle='rgba(40,20,10,0.7)';
+  ctx.fillRect(cx-rx,cy-ry*1.1,rx*2,ry*2.2);
   ctx.restore();
 
-  // 2. 横溝テクスチャ
+  // 2. 漢字を描画
   ctx.save();
   brainClipPath(); ctx.clip();
-  ctx.strokeStyle='rgba(0,0,0,0.15)';
-  ctx.lineWidth=1;
-  for(let i=0;i<8;i++){
-    const yg=startY+i*(totalH/7);
-    ctx.beginPath();
-    ctx.moveTo(cx-rx*0.7, yg);
-    ctx.bezierCurveTo(cx-rx*0.3,yg-8, cx+rx*0.3,yg+8, cx+rx*0.7,yg);
-    ctx.stroke();
-  }
+  placed.forEach(p=>{
+    const size=fontSize*(0.8+Math.random()*0.5);
+    const alpha=0.7+Math.random()*0.3;
+    const angle=(Math.random()-0.5)*0.4;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(angle);
+    ctx.font=`bold ${size}px 'Noto Serif JP',serif`;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.globalAlpha=alpha;
+    ctx.fillStyle=p.color;
+    ctx.shadowColor='rgba(0,0,0,0.4)';
+    ctx.shadowBlur=2;
+    ctx.fillText(p.kanji, 0, 0);
+    ctx.restore();
+  });
   ctx.restore();
 
   // 3. 光沢
   ctx.save();
   brainClipPath(); ctx.clip();
-  const grd=ctx.createRadialGradient(cx-rx*0.2,cy-ry*0.5,0, cx,cy,rx);
-  grd.addColorStop(0,'rgba(255,255,255,0.15)');
+  const grd=ctx.createRadialGradient(cx-rx*0.2,cy-ry*0.5,0,cx,cy,rx);
+  grd.addColorStop(0,'rgba(255,220,180,0.1)');
   grd.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=grd;
   ctx.fillRect(cx-rx,cy-ry,rx*2,ry*2);
@@ -297,69 +354,20 @@ function drawBrain(canvas, ratios){
   // 4. 脳の外枠
   ctx.save();
   brainClipPath();
-  ctx.strokeStyle='rgba(255,230,200,0.5)';
+  ctx.strokeStyle='rgba(255,200,150,0.5)';
   ctx.lineWidth=1.5;
   ctx.stroke();
   ctx.restore();
 
   // 5. 中央の溝
   ctx.save();
-  ctx.strokeStyle='rgba(15,8,4,0.75)';
-  ctx.lineWidth=3;
+  ctx.strokeStyle='rgba(15,8,4,0.6)';
+  ctx.lineWidth=2.5;
   ctx.beginPath();
   ctx.moveTo(cx, cy-ry*0.88);
   ctx.bezierCurveTo(cx-4,cy-ry*0.4, cx+4,cy+ry*0.2, cx,cy+ry*0.75);
   ctx.stroke();
   ctx.restore();
-
-  // 6. 各ブロックに絵文字・ラベル・パーセントを表示
-  let labelY=startY;
-  ratios.forEach((r,i)=>{
-    const h=totalH*r;
-    const midY=labelY+h/2;
-    const pct=Math.round(r*100);
-
-    ctx.save();
-    brainClipPath(); ctx.clip();
-
-    if(h>=40){
-      // 大きいブロック：絵文字＋ラベル＋%
-      const fontSize=Math.min(18, h*0.28);
-      // 絵文字
-      ctx.font=`${Math.min(20,h*0.3)}px sans-serif`;
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.globalAlpha=0.95;
-      ctx.fillText(ITEMS[i].emoji, cx, midY-fontSize*0.8);
-      // ラベル
-      ctx.font=`bold ${fontSize}px 'Noto Serif JP',sans-serif`;
-      ctx.fillStyle='rgba(255,255,255,0.95)';
-      ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=3;
-      ctx.fillText(ITEMS[i].label, cx, midY+fontSize*0.2);
-      // パーセント
-      ctx.font=`${Math.max(10,fontSize*0.75)}px sans-serif`;
-      ctx.fillStyle='rgba(255,255,255,0.7)';
-      ctx.shadowBlur=0;
-      ctx.fillText(`${pct}%`, cx, midY+fontSize*1.3);
-    } else if(h>=22){
-      // 中サイズ：ラベル＋%
-      const fontSize=Math.min(14,h*0.38);
-      ctx.font=`bold ${fontSize}px sans-serif`;
-      ctx.fillStyle='rgba(255,255,255,0.95)';
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=3;
-      ctx.fillText(`${ITEMS[i].label} ${pct}%`, cx, midY);
-    } else if(h>=12){
-      // 小さいブロック：ラベルのみ
-      ctx.font=`bold ${Math.max(9,h*0.5)}px sans-serif`;
-      ctx.fillStyle='rgba(255,255,255,0.9)';
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=2;
-      ctx.fillText(ITEMS[i].label, cx, midY);
-    }
-
-    ctx.restore();
-    labelY+=h;
-  });
 }
 
 // ── メイン処理
