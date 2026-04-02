@@ -233,103 +233,61 @@ function nameToRatios(name){
   return ratios;
 }
 
-// ── 脳のCanvas描画（ネコキャラ横顔＋漢字グリッド）
+// ── 脳のCanvas描画（かわいい横顔シルエット＋漢字グリッド）
 function drawBrain(canvas, ratios){
   const ctx=canvas.getContext('2d');
   const W=canvas.width, H=canvas.height;
   ctx.clearRect(0,0,W,H);
 
-  // 背景（薄いラベンダー）
-  ctx.fillStyle='#e8e0f4';
+  // 背景（水色）
+  ctx.fillStyle='#b8e4f0';
   ctx.fillRect(0,0,W,H);
 
-  const cx=W*0.52, cy=H*0.42;
-  const headR=W*0.34;
+  const scale=W/320;
+  const ox=10*scale, oy=8*scale; // オフセット
 
-  // ── 首・体（簡易）
+  // ── 頭・顔の輪郭（かわいい丸めシルエット）
   ctx.save();
   ctx.beginPath();
-  ctx.moveTo(cx-headR*0.4, cy+headR*0.92);
-  ctx.bezierCurveTo(cx-headR*0.5,cy+headR*1.5, cx-headR*0.3,cy+headR*1.7, cx,cy+headR*1.72);
-  ctx.bezierCurveTo(cx+headR*0.3,cy+headR*1.7, cx+headR*0.5,cy+headR*1.5, cx+headR*0.4,cy+headR*0.92);
-  ctx.fillStyle='#f5e6d0';
-  ctx.fill();
-  ctx.strokeStyle='#c8a080';
-  ctx.lineWidth=2;
-  ctx.stroke();
-  ctx.restore();
-
-  // ── 頭部（丸い）
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(cx, cy, headR, 0, Math.PI*2);
-  ctx.fillStyle='#f5e6d0';
-  ctx.fill();
-  ctx.strokeStyle='#c8a080';
-  ctx.lineWidth=2.5;
-  ctx.stroke();
-  ctx.restore();
-
-  // ── ネコ耳（左右）
-  // 左耳
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(cx-headR*0.65, cy-headR*0.72);
-  ctx.lineTo(cx-headR*0.92, cy-headR*1.18);
-  ctx.lineTo(cx-headR*0.25, cy-headR*0.95);
+  ctx.moveTo(ox+155*scale, oy+10*scale);
+  // 頭頂〜右側頭部
+  ctx.bezierCurveTo(ox+195*scale,oy+8*scale,  ox+235*scale,oy+30*scale,  ox+245*scale,oy+75*scale);
+  // 右耳あたり〜頬
+  ctx.bezierCurveTo(ox+252*scale,oy+110*scale, ox+248*scale,oy+145*scale, ox+235*scale,oy+168*scale);
+  // 顎〜あご先（丸め）
+  ctx.bezierCurveTo(ox+222*scale,oy+192*scale, ox+200*scale,oy+208*scale, ox+175*scale,oy+210*scale);
+  ctx.bezierCurveTo(ox+155*scale,oy+212*scale, ox+135*scale,oy+205*scale, ox+120*scale,oy+195*scale);
+  // 首の前側
+  ctx.bezierCurveTo(ox+108*scale,oy+185*scale, ox+100*scale,oy+172*scale, ox+98*scale,oy+158*scale);
+  // 首〜肩
+  ctx.bezierCurveTo(ox+94*scale,oy+142*scale,  ox+88*scale,oy+130*scale,  ox+72*scale,oy+118*scale);
+  // 後頭部〜頭頂へ
+  ctx.bezierCurveTo(ox+50*scale,oy+100*scale,  ox+48*scale,oy+60*scale,   ox+80*scale,oy+25*scale);
+  ctx.bezierCurveTo(ox+100*scale,oy+10*scale,  ox+130*scale,oy+5*scale,   ox+155*scale,oy+10*scale);
   ctx.closePath();
-  ctx.fillStyle='#f5e6d0';
+  ctx.fillStyle='#fdecd8';
   ctx.fill();
-  ctx.strokeStyle='#c8a080';
-  ctx.lineWidth=2;
+  ctx.strokeStyle='#5a3a1a';
+  ctx.lineWidth=2.8*scale;
+  ctx.lineJoin='round';
   ctx.stroke();
-  // 耳内側（ピンク）
-  ctx.beginPath();
-  ctx.moveTo(cx-headR*0.63, cy-headR*0.76);
-  ctx.lineTo(cx-headR*0.84, cy-headR*1.1);
-  ctx.lineTo(cx-headR*0.32, cy-headR*0.92);
-  ctx.closePath();
-  ctx.fillStyle='#f0a0b0';
-  ctx.fill();
   ctx.restore();
 
-  // 右耳
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(cx+headR*0.65, cy-headR*0.72);
-  ctx.lineTo(cx+headR*0.92, cy-headR*1.18);
-  ctx.lineTo(cx+headR*0.25, cy-headR*0.95);
-  ctx.closePath();
-  ctx.fillStyle='#f5e6d0';
-  ctx.fill();
-  ctx.strokeStyle='#c8a080';
-  ctx.lineWidth=2;
-  ctx.stroke();
-  // 耳内側（ピンク）
-  ctx.beginPath();
-  ctx.moveTo(cx+headR*0.63, cy-headR*0.76);
-  ctx.lineTo(cx+headR*0.84, cy-headR*1.1);
-  ctx.lineTo(cx+headR*0.32, cy-headR*0.92);
-  ctx.closePath();
-  ctx.fillStyle='#f0a0b0';
-  ctx.fill();
-  ctx.restore();
-
-  // ── 脳エリア（頭部の上半分・楕円）
-  const bx=cx, by=cy-headR*0.12;
-  const brx=headR*0.78, bry=headR*0.62;
+  // ── 脳エリア（楕円）
+  const bcx=ox+168*scale, bcy=oy+95*scale;
+  const brx=72*scale, bry=58*scale;
 
   ctx.save();
   ctx.beginPath();
-  ctx.ellipse(bx, by, brx, bry, 0, 0, Math.PI*2);
-  ctx.fillStyle='#fff8f0';
+  ctx.ellipse(bcx, bcy, brx, bry, -0.08, 0, Math.PI*2);
+  ctx.fillStyle='#fff4e8';
   ctx.fill();
-  ctx.strokeStyle='#c8a080';
-  ctx.lineWidth=1.5;
+  ctx.strokeStyle='#8a6040';
+  ctx.lineWidth=1.5*scale;
   ctx.stroke();
   ctx.restore();
 
-  // ── 漢字グリッド（脳エリア内）
+  // ── 漢字グリッド
   const KANJI=[
     ['食','飯','腹','味','肉','甘'],
     ['愛','恋','心','好','婚','縁'],
@@ -338,33 +296,28 @@ function drawBrain(canvas, ratios){
     ['眠','夢','寝','休','安','怠'],
     ['遊','楽','喜','趣','笑','踊'],
   ];
-
-  const TOTAL=55;
+  const TOTAL=50;
   let charPool=[];
   ratios.forEach((r,i)=>{
     const count=Math.max(1,Math.round(r*TOTAL));
     for(let j=0;j<count;j++){
-      charPool.push({
-        kanji:KANJI[i][Math.floor(Math.random()*KANJI[i].length)],
-        color:ITEMS[i].color,
-      });
+      charPool.push({kanji:KANJI[i][Math.floor(Math.random()*KANJI[i].length)],color:ITEMS[i].color});
     }
   });
   for(let i=charPool.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
     [charPool[i],charPool[j]]=[charPool[j],charPool[i]];
   }
-
-  const fontSize=Math.min(brx,bry)/4.2;
-  const cols=Math.floor(brx*2/(fontSize*1.12));
-  const rows=Math.floor(bry*2/(fontSize*1.18));
+  const fs=Math.min(brx,bry)/4.0;
+  const cols=Math.floor(brx*2/(fs*1.1));
+  const rows=Math.floor(bry*2/(fs*1.18));
   let gridPts=[];
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
-      const x=bx-brx+fontSize*0.6+c*(brx*2-fontSize)/(cols-1||1);
-      const y=by-bry+fontSize*0.6+r*(bry*2-fontSize)/(rows-1||1);
-      const dx=(x-bx)/(brx*0.9);
-      const dy=(y-by)/(bry*0.88);
+      const x=bcx-brx+fs*0.55+c*(brx*2-fs)/(cols-1||1);
+      const y=bcy-bry+fs*0.55+r*(bry*2-fs)/(rows-1||1);
+      const dx=(x-bcx)/(brx*0.9);
+      const dy=(y-bcy)/(bry*0.88);
       if(dx*dx+dy*dy<=1) gridPts.push({x,y});
     }
   }
@@ -372,125 +325,90 @@ function drawBrain(canvas, ratios){
     const j=Math.floor(Math.random()*(i+1));
     [gridPts[i],gridPts[j]]=[gridPts[j],gridPts[i]];
   }
-
   ctx.save();
   ctx.beginPath();
-  ctx.ellipse(bx, by, brx, bry, 0, 0, Math.PI*2);
+  ctx.ellipse(bcx, bcy, brx, bry, -0.08, 0, Math.PI*2);
   ctx.clip();
   gridPts.forEach((pt,i)=>{
     if(i>=charPool.length) return;
     const ch=charPool[i];
-    const size=fontSize*(0.82+Math.random()*0.28);
+    const size=fs*(0.82+Math.random()*0.28);
     ctx.font=`bold ${size}px 'Noto Serif JP',serif`;
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillStyle=ch.color;
     ctx.globalAlpha=0.88+Math.random()*0.12;
     ctx.fillText(ch.kanji, pt.x, pt.y);
   });
   ctx.restore();
 
-  // 脳の中央溝
+  // 脳の溝
   ctx.save();
-  ctx.strokeStyle='rgba(180,130,90,0.3)';
-  ctx.lineWidth=1.5;
+  ctx.strokeStyle='rgba(120,80,40,0.3)';
+  ctx.lineWidth=1.5*scale;
   ctx.beginPath();
-  ctx.moveTo(bx, by-bry*0.9);
-  ctx.bezierCurveTo(bx-2,by, bx+2,by, bx,by+bry*0.9);
+  ctx.moveTo(bcx+2*scale, bcy-bry*0.9);
+  ctx.bezierCurveTo(bcx-2*scale,bcy, bcx+2*scale,bcy, bcx,bcy+bry*0.88);
   ctx.stroke();
   ctx.restore();
 
-  // ── 顔パーツ（下半分）
+  // ── 顔パーツ
   ctx.save();
+  ctx.strokeStyle='#5a3a1a'; ctx.lineWidth=2*scale; ctx.lineCap='round';
 
-  // 目（大きくてかわいい）
-  const eyeLX=cx-headR*0.32, eyeRX=cx+headR*0.32;
-  const eyeY=cy+headR*0.22;
-  const eyeR=headR*0.12;
-  // 白目
-  [eyeLX,eyeRX].forEach(ex=>{
-    ctx.beginPath(); ctx.ellipse(ex,eyeY,eyeR,eyeR*1.1,0,0,Math.PI*2);
-    ctx.fillStyle='#fff'; ctx.fill();
-    ctx.strokeStyle='#333'; ctx.lineWidth=1.5; ctx.stroke();
-  });
-  // 黒目
-  [eyeLX,eyeRX].forEach(ex=>{
-    ctx.beginPath(); ctx.arc(ex+eyeR*0.1,eyeY+eyeR*0.1,eyeR*0.6,0,Math.PI*2);
-    ctx.fillStyle='#222'; ctx.fill();
-    // ハイライト
-    ctx.beginPath(); ctx.arc(ex-eyeR*0.1,eyeY-eyeR*0.2,eyeR*0.22,0,Math.PI*2);
-    ctx.fillStyle='#fff'; ctx.fill();
-  });
-  // まつ毛
-  ctx.strokeStyle='#333'; ctx.lineWidth=1.2;
-  [[-1,1],[0,1],[1,1]].forEach(([dx,_],i)=>{
-    ctx.beginPath();
-    ctx.moveTo(eyeLX+dx*eyeR, eyeY-eyeR*1.0);
-    ctx.lineTo(eyeLX+dx*eyeR*1.4, eyeY-eyeR*1.5);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(eyeRX+dx*eyeR, eyeY-eyeR*1.0);
-    ctx.lineTo(eyeRX+dx*eyeR*1.4, eyeY-eyeR*1.5);
-    ctx.stroke();
-  });
+  // 目（丸くてかわいい）
+  const eyeX=ox+128*scale, eyeY=oy+128*scale;
+  ctx.beginPath(); ctx.arc(eyeX, eyeY, 9*scale, 0, Math.PI*2);
+  ctx.fillStyle='#fff'; ctx.fill();
+  ctx.strokeStyle='#333'; ctx.lineWidth=1.8*scale; ctx.stroke();
+  ctx.beginPath(); ctx.arc(eyeX+2*scale, eyeY+1*scale, 6*scale, 0, Math.PI*2);
+  ctx.fillStyle='#222'; ctx.fill();
+  ctx.beginPath(); ctx.arc(eyeX, eyeY-2*scale, 2.5*scale, 0, Math.PI*2);
+  ctx.fillStyle='#fff'; ctx.fill();
 
-  // 鼻（小さい逆三角）
+  // まゆ毛
+  ctx.strokeStyle='#5a3a1a'; ctx.lineWidth=2.2*scale;
   ctx.beginPath();
-  ctx.moveTo(cx, eyeY+headR*0.18);
-  ctx.lineTo(cx-headR*0.06, eyeY+headR*0.26);
-  ctx.lineTo(cx+headR*0.06, eyeY+headR*0.26);
-  ctx.closePath();
-  ctx.fillStyle='#e08080'; ctx.fill();
+  ctx.moveTo(eyeX-10*scale, eyeY-13*scale);
+  ctx.bezierCurveTo(eyeX-4*scale,eyeY-17*scale, eyeX+6*scale,eyeY-16*scale, eyeX+10*scale,eyeY-12*scale);
+  ctx.stroke();
+
+  // 鼻
+  ctx.beginPath();
+  ctx.moveTo(ox+118*scale, oy+148*scale);
+  ctx.bezierCurveTo(ox+112*scale,oy+157*scale, ox+113*scale,oy+164*scale, ox+120*scale,oy+166*scale);
+  ctx.bezierCurveTo(ox+124*scale,oy+167*scale, ox+126*scale,oy+164*scale, ox+124*scale,oy+160*scale);
+  ctx.strokeStyle='#8a5a3a'; ctx.lineWidth=1.8*scale;
+  ctx.stroke();
 
   // 口（にっこり）
   ctx.beginPath();
-  ctx.moveTo(cx-headR*0.2, eyeY+headR*0.35);
-  ctx.bezierCurveTo(cx-headR*0.08,eyeY+headR*0.48, cx+headR*0.08,eyeY+headR*0.48, cx+headR*0.2,eyeY+headR*0.35);
-  ctx.strokeStyle='#c06060'; ctx.lineWidth=2; ctx.stroke();
+  ctx.moveTo(ox+112*scale, oy+178*scale);
+  ctx.bezierCurveTo(ox+120*scale,oy+187*scale, ox+138*scale,oy+187*scale, ox+144*scale,oy+178*scale);
+  ctx.strokeStyle='#c06050'; ctx.lineWidth=2*scale; ctx.stroke();
 
-  // ほっぺ（赤み）
-  [cx-headR*0.42, cx+headR*0.42].forEach(hx=>{
-    ctx.beginPath();
-    ctx.ellipse(hx, eyeY+headR*0.28, headR*0.18, headR*0.1, 0, 0, Math.PI*2);
-    ctx.fillStyle='rgba(255,150,150,0.25)'; ctx.fill();
-  });
+  // ほっぺ
+  ctx.beginPath();
+  ctx.ellipse(ox+108*scale, oy+160*scale, 14*scale, 8*scale, 0, 0, Math.PI*2);
+  ctx.fillStyle='rgba(255,140,140,0.22)'; ctx.fill();
 
-  // ヒゲ（左）
-  ctx.strokeStyle='#aaa'; ctx.lineWidth=1;
-  [[-0.05,-0.05],[0,0],[0.05,0.05]].forEach(([dy1,dy2])=>{
-    ctx.beginPath();
-    ctx.moveTo(cx-headR*0.12, eyeY+headR*(0.22+dy1));
-    ctx.lineTo(cx-headR*0.62, eyeY+headR*(0.12+dy2));
-    ctx.stroke();
-  });
-  // ヒゲ（右）
-  [[-0.05,-0.05],[0,0],[0.05,0.05]].forEach(([dy1,dy2])=>{
-    ctx.beginPath();
-    ctx.moveTo(cx+headR*0.12, eyeY+headR*(0.22+dy1));
-    ctx.lineTo(cx+headR*0.62, eyeY+headR*(0.12+dy2));
-    ctx.stroke();
-  });
+  // 耳
+  ctx.beginPath();
+  ctx.ellipse(ox+80*scale, oy+105*scale, 10*scale, 16*scale, 0.2, 0, Math.PI*2);
+  ctx.fillStyle='#fdecd8'; ctx.fill();
+  ctx.strokeStyle='#5a3a1a'; ctx.lineWidth=2*scale; ctx.stroke();
 
   ctx.restore();
 
-  // ── 矢印と「理性」「本能」
-  const arrowY=H*0.88;
-  ctx.save();
-  ctx.strokeStyle='#886644'; ctx.lineWidth=1.5; ctx.fillStyle='#886644';
-  ctx.font=`bold ${H*0.048}px 'Noto Serif JP',serif`;
-  ctx.textBaseline='middle';
-  // 左矢印
-  const ax1=W*0.12, ax2=W*0.46;
-  ctx.beginPath(); ctx.moveTo(ax2,arrowY); ctx.lineTo(ax1,arrowY); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(ax1,arrowY); ctx.lineTo(ax1+8,arrowY-5); ctx.lineTo(ax1+8,arrowY+5); ctx.fill();
-  ctx.textAlign='center'; ctx.fillText('理性',(ax1+ax2)/2,arrowY+H*0.05);
-  // 右矢印
-  const ax3=W*0.54, ax4=W*0.88;
-  ctx.beginPath(); ctx.moveTo(ax3,arrowY); ctx.lineTo(ax4,arrowY); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(ax4,arrowY); ctx.lineTo(ax4-8,arrowY-5); ctx.lineTo(ax4-8,arrowY+5); ctx.fill();
-  ctx.fillText('本能',(ax3+ax4)/2,arrowY+H*0.05);
-  ctx.restore();
 }
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // 背景（薄いラベンダー）
+  ctx.fillStyle='#e8e0f4';
+  ctx.fillRect(0,0,W,H);
+
+
 
 
 
