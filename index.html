@@ -267,7 +267,7 @@ function drawBrain(canvas, ratios){
     ];
 
     // 割合に応じて漢字プールを生成
-    const TOTAL = 50;
+    const TOTAL = 90;
     let charPool = [];
     ratios.forEach((r, i) => {
       const count = Math.max(1, Math.round(r * TOTAL));
@@ -285,9 +285,9 @@ function drawBrain(canvas, ratios){
     }
 
     // グリッド座標生成（楕円内）
-    const fs = Math.min(brx, bry) / 4.2;
-    const cols = Math.floor(brx * 2 / (fs * 1.1));
-    const rows = Math.floor(bry * 2 / (fs * 1.18));
+    const fs = Math.min(brx, bry) / 5.2;
+    const cols = Math.floor(brx * 2 / (fs * 1.0));
+    const rows = Math.floor(bry * 2 / (fs * 1.05));
     let gridPts = [];
     for(let r = 0; r < rows; r++){
       for(let c = 0; c < cols; c++){
